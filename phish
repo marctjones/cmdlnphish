@@ -1,0 +1,105 @@
+#!/usr/bin/python 
+# Send an HTML email with an embedded image and a plain text message for
+# email clients that don't want to display the HTML.
+
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
+from email.MIMEImage import MIMEImage
+from random import randint
+import argparse
+import smtplib
+
+parser = argparse.ArgumentParser(description='Phish people')
+parser.add_argument('-c','--campaign',
+	dest="campaign",
+	help="Specifiy a tracking code for the campaign. If you provide one it is embedded in the uid of each user.",
+	default = "TEST")
+parser.add_argument('--he','--html-email',
+        dest="html_email", 
+        help="File containing HTML email template",
+	default='<b>Some <i>HTML</i> text</b> and an image.<br><img src="cid:image1"><br>Nifty!')
+parser.add_argument('--tracker-html',
+        dest="html_tracker",
+        help="HTML to add to emails to track who opens the email",
+        default='<p>We are tracking you!<img src="http://phishing.teachsecurity.com/tracking_pixel.png?uid=${strUid}">')
+parser.add_argument('--te','--text-email', 
+	dest="text_email",
+        help="File containing text version of email template",
+	default='This is the alternative plain text message.')
+parser.add_argument('-f','--victims-file',
+        dest="victims_file",
+        help="CSV file of template data. Email address should be in column titled 'email'.")
+parser.add_argument('-s','--subject',
+        dest="email_subject",
+        help="Subject of the phishing email.",
+        default = "Sample Email")
+parser.add_argument('-a','--from-address', 
+	dest="email_from_address",
+	help="From address for the phishing email.",
+	default = "marc@teachsecurity.com")
+parser.add_argument('-n','--from-name',
+	dest="email_from_name",
+	help="From name for the phishing email.",
+	default = "Evil Eve")
+parser.add_argument('-t','--to-address',
+	dest="email_to_address",
+	help="To addresss for email",
+	default = "marc@joneslaw.io")
+parser.add_argument('-d','--deliver',
+	dest="simulate",
+	help="Turn off simulation of sending emails and send emails",
+	default=True)
+
+args = parser.parse_args()
+smtp = smtplib.SMTP()
+
+# Define these once; use them twice!
+strFrom = args.email_from_address
+
+if not args.simulate:
+	smtpConnectStatus = smtp.connect('smtp.teachsecurity.com')
+	#smtp.login('exampleuser', 'examplepass')
+	print "Connect: " + str(smtpConnectStatus) 
+
+strTo = args.email_to_address
+strUid = str(args.campaign) + str(randint(10000, 99999))
+
+# Create the root message and fill in the from, to, and subject headers
+msgRoot = MIMEMultipart('related')
+msgRoot['Subject'] = args.email_subject
+msgRoot['From'] = strFrom
+msgRoot['To'] = strTo
+msgRoot.preamble = 'This is a multi-part message in MIME format.'
+
+# Encapsulate the plain and HTML versions of the message body in an
+# 'alternative' part, so message agents can decide which they want to display.
+msgAlternative = MIMEMultipart('alternative')
+msgRoot.attach(msgAlternative)
+
+msgText = MIMEText(args.text_email)
+msgAlternative.attach(msgText)
+
+# We reference the image in the IMG SRC attribute by the ID we give it below
+htmlText = args.html_email + args.html_tracker
+msgText = MIMEText(htmlText, 'html')
+msgAlternative.attach(msgText)
+
+# This example assumes the image is in the current directory
+fp = open('bear.png', 'rb')
+msgImage = MIMEImage(fp.read())
+fp.close()
+
+# Define the image's ID as referenced above
+msgImage.add_header('Content-ID', '<image1>')
+msgRoot.attach(msgImage)
+
+if not args.simulate:
+	smtpSendStatus = smtp.sendmail(strFrom, strTo, msgRoot.as_string())
+else:
+	smtpSendStatus = "faked"
+	print msgRoot.as_string()
+
+print "To:" + strTo + " UID:" + strUid + " Send: " + str(smtpSendStatus)
+
+if not args.simulate:
+	smtp.quit()
