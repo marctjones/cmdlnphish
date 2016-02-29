@@ -6,8 +6,10 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.MIMEImage import MIMEImage
 from random import randint
+from string import Template
 import argparse
 import smtplib
+import csv
 
 parser = argparse.ArgumentParser(description='Phish people')
 parser.add_argument('-c','--campaign',
@@ -21,7 +23,7 @@ parser.add_argument('--he','--html-email',
 parser.add_argument('--tracker-html',
         dest="html_tracker",
         help="HTML to add to emails to track who opens the email",
-        default='<p>We are tracking you!<img src="http://phishing.teachsecurity.com/tracking_pixel.png?uid=${strUid}">')
+        default='<p>We are tracking you!<img src="http://phishing.teachsecurity.com/tracking_pixel.png?uid=${uid}">')
 parser.add_argument('--te','--text-email', 
 	dest="text_email",
         help="File containing text version of email template",
@@ -48,6 +50,7 @@ parser.add_argument('-t','--to-address',
 parser.add_argument('-d','--deliver',
 	dest="simulate",
 	help="Turn off simulation of sending emails and send emails",
+	action='store_false',
 	default=True)
 
 args = parser.parse_args()
@@ -61,45 +64,50 @@ if not args.simulate:
 	#smtp.login('exampleuser', 'examplepass')
 	print "Connect: " + str(smtpConnectStatus) 
 
-strTo = args.email_to_address
-strUid = str(args.campaign) + str(randint(10000, 99999))
+victims = csv.DictReader(open(args.victims_file, 'r'))
+for victim in victims:
+	strTo = victim['email']
 
-# Create the root message and fill in the from, to, and subject headers
-msgRoot = MIMEMultipart('related')
-msgRoot['Subject'] = args.email_subject
-msgRoot['From'] = strFrom
-msgRoot['To'] = strTo
-msgRoot.preamble = 'This is a multi-part message in MIME format.'
+	strUid = str(args.campaign) + str(randint(10000, 99999))
+	d = {"uid": strUid}
 
-# Encapsulate the plain and HTML versions of the message body in an
-# 'alternative' part, so message agents can decide which they want to display.
-msgAlternative = MIMEMultipart('alternative')
-msgRoot.attach(msgAlternative)
+	# Create the root message and fill in the from, to, and subject headers
+	msgRoot = MIMEMultipart('related')
+	msgRoot['Subject'] = args.email_subject
+	msgRoot['From'] = strFrom
+	msgRoot['To'] = strTo
+	msgRoot.preamble = 'This is a multi-part message in MIME format.'
 
-msgText = MIMEText(args.text_email)
-msgAlternative.attach(msgText)
+	# Encapsulate the plain and HTML versions of the message body in an
+	# 'alternative' part, so message agents can decide which they want to display.
+	msgAlternative = MIMEMultipart('alternative')
+	msgRoot.attach(msgAlternative)
 
-# We reference the image in the IMG SRC attribute by the ID we give it below
-htmlText = args.html_email + args.html_tracker
-msgText = MIMEText(htmlText, 'html')
-msgAlternative.attach(msgText)
+	textText = Template(args.text_email).substitute(d)
+	msgText = MIMEText(textText)
+	msgAlternative.attach(msgText)
 
-# This example assumes the image is in the current directory
-fp = open('bear.png', 'rb')
-msgImage = MIMEImage(fp.read())
-fp.close()
+	# We reference the image in the IMG SRC attribute by the ID we give it below
+	htmlText = Template(args.html_email + args.html_tracker).substitute(d)
+	msgText = MIMEText(htmlText, 'html')
+	msgAlternative.attach(msgText)
 
-# Define the image's ID as referenced above
-msgImage.add_header('Content-ID', '<image1>')
-msgRoot.attach(msgImage)
+	# This example assumes the image is in the current directory
+	fp = open('bear.png', 'rb')
+	msgImage = MIMEImage(fp.read())
+	fp.close()
 
-if not args.simulate:
-	smtpSendStatus = smtp.sendmail(strFrom, strTo, msgRoot.as_string())
-else:
-	smtpSendStatus = "faked"
-	print msgRoot.as_string()
+	# Define the image's ID as referenced above
+	msgImage.add_header('Content-ID', '<image1>')
+	msgRoot.attach(msgImage)
 
-print "To:" + strTo + " UID:" + strUid + " Send: " + str(smtpSendStatus)
+	if not args.simulate:
+		smtpSendStatus = smtp.sendmail(strFrom, strTo, msgRoot.as_string())
+	else:
+		smtpSendStatus = "faked"
+		print msgRoot.as_string()
+
+	print "To:" + strTo + " UID:" + strUid + " Send: " + str(smtpSendStatus)
 
 if not args.simulate:
 	smtp.quit()
