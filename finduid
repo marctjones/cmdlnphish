@@ -1,0 +1,38 @@
+#!/usr/bin/python
+import argparse
+import hashlib
+import binascii
+
+def new_salt(len=64):
+    return binascii.hexlify(os.urandom(len))
+
+def uid(email, salt =""):
+        m = hashlib.sha512()
+        m.update(salt + email)
+        return m.hexdigest()
+
+parser = argparse.ArgumentParser(description='Phish people')
+parser.add_argument('-v', action="count", dest='verbose')
+parser.add_argument('-s', dest="salt", default="")
+parser.add_argument('-e', dest="email", default="")
+parser.add_argument('-u', dest="uid", default="")
+args = parser.parse_args()
+
+if '=' in args.uid:
+	campaign = args.uid[:args.uid.index('=')]
+	encoded_email = args.uid[args.uid.index('=') + 1:]
+else:
+	encoded_email = args.uid
+
+if encoded_email == uid(args.salt + args.email):
+	match = True
+else:
+	match = False
+print "uid:           " + args.uid
+print "campaign:      " + campaign
+print "encoded email: " + encoded_email
+print "salt:          " + args.salt
+print "email:         " + args.email
+print "email match:   " + str(match)
+
+

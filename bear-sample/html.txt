@@ -1,0 +1,10 @@
+Dear ${fname} ${lname};
+
+<p>I am hoping you will fall for my deception because you can see a picture of a cute bear.
+<img alt="Where is the bear!" src="cid:bear.png"></p>
+
+<p>Now that you have seen a cute bear fall for my trick and click <a href="http://8.teachsecurity.com/?${uid}">here</a></p>!
+
+Sincerly,
+
+Your fake friend

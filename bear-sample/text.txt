@@ -1,0 +1,9 @@
+Dear ${fname} ${lname};
+
+We aren't tracking if you read this message because you are looking at the alternative plain text message. You can always click this link so we can still decieve you: http://8.teachsecurit.com/?${uid}.
+
+You can also view the HTML version of this message so we can track that you read the message.
+
+Thanks!
+
+-Someone who wishes you harm
