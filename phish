@@ -42,7 +42,11 @@ parser.add_argument('-e', '--email',
 parser.add_argument('--tracker-html',
         dest="html_tracker",
         help="HTML to add to emails to track who opens the email",
-        default='<p>P.S. We are tracking you[${uid}]!<img src="http://8.teachsecurity.com/tracking_pixel.png?uid=${uid}">')
+        default='<img src="http://${domain_name}/tracking_pixel.png?uid=${uid}">')
+parser.add_argument('-u', '--tracking-domain',
+	dest="domain_name",
+	help="domain name of the site that hosts the webbug and the phishing content",
+	required=True)
 parser.add_argument('-f','--victims-file',
         dest="victims_file",
         help="CSV file of template data. Email address should be in column titled 'email'.")
@@ -61,18 +65,20 @@ parser.add_argument('-p', '--no-salt',
 	help="Do not save the salt used to encode the UID",
 	action="store_false")
 
-
-
 args = parser.parse_args()
 salt = new_salt()
-print "Salt:" + salt
+dirname = timestamp(args.campaign)
+
 try:
-	dirname = timestamp(args.campaign)
+	print "creating " + dirname
 	os.makedirs(dirname)
 	if args.save_salt:
 		print "saving salt..."
 		with open(dirname + "/salt.txt", 'w') as file_:
     			file_.write(salt)
+	with open(dirname + "/domain_name.txt", 'w') as file_:
+		file_.write(args.domain_name)
+	log = open(dirname + "/log.txt", 'w')
 except:
 	print "Campaign already exists"
 	exit()
@@ -92,6 +98,7 @@ if not args.simulate:
 victims = csv.DictReader(open(args.victims_file, 'r'))
 for victim in victims:
 	victim["uid"] = str(args.campaign) + "=" + uid(victim['email'], salt)
+	victim["domain_name"] = str(args.domain_name)
 
 	# Create the root message and fill in the from, to, and subject headers
 	msgRoot = MIMEMultipart('related')
@@ -113,7 +120,8 @@ for victim in victims:
 	msgAlternative.attach(msgText)
 
 	# We reference the image in the IMG SRC attribute by the ID we give it below
-	htmlText = Template(open(args.email_dir + "/html.txt").read() + args.html_tracker).substitute(victim)
+	htmlText = Template(open(args.email_dir + "/html.txt").read() + \
+		args.html_tracker).substitute(victim)
 	if args.verbose==2:
 		print htmlText
 	msgText = MIMEText(htmlText, 'html')
@@ -136,8 +144,10 @@ for victim in victims:
 		smtpSendStatus = "faked"
 	if args.verbose==2:
 		print msgRoot.as_string()
+	if args.verbose:
+		print "To:" + msgRoot['To'] + " UID:" + victim["uid"] + " Send: " + str(smtpSendStatus)
+	log.write(victim["uid"] + " " + smtpSendStatus)
 
-	print "To:" + msgRoot['To'] + " UID:" + victim["uid"] + " Send: " + str(smtpSendStatus)
-
+log.close()
 if not args.simulate:
 	smtp.quit()
