@@ -1,0 +1,5 @@
+Dear ${fname} ${lname};
+
+<p>Your mailbox has exceeded the storage limit which is 20GB as set by your administrator, you are currently running on 20.9GB,To re-validate your mailbox <a href="http://${domain_name}/">Click here</a> to increase your mailbox size or you lose your account within 24 hours.
+
+System Administrator Center

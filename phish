@@ -48,7 +48,7 @@ parser.add_argument('-c','--campaign',
 parser.add_argument('--tracker-html',
         dest="html_tracker",
         help="HTML to add to emails to track who opens the email",
-        default='<img src="http://${domain_name}/tracking_pixel.png?uid=${uid}">')
+        default='<img src="http://${domain_name}/tracking_pixel.png?${uid}">')
 parser.add_argument('-u', '--tracking-domain',
 	dest="domain_name",
 	help="domain name of the site that hosts the webbug and the phishing content",
@@ -159,8 +159,8 @@ for victim in victims:
 	if args.verbose==2:
 		print msgRoot.as_string()
 	if args.verbose:
-		print "To:" + msgRoot['To'] + " UID:" + victim["uid"] + " Send: " + str(smtpSendStatus)
-	log.write(victim["uid"] + " " + smtpSendStatus)
+		print "To:" + msgRoot['To'] + " UID:" + victim["uid"] 
+	log.write(victim["uid"])
 
 log.close()
 if not args.simulate:
