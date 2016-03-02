@@ -11,6 +11,16 @@ import hashlib
 import os
 import binascii
 import datetime
+import httplib
+
+def gettemplate_dir(domain_name):
+    conn = httplib.HTTPConnection(domain_name)
+    conn.request("GET", "/_name.txt")
+    r1 = conn.getresponse()
+    if r1.status == 200:
+	return r1.read().rstrip('\r\n')
+    else:
+	return ""
 
 def attachments(email_dir):
     for root, dirs, files in os.walk(email_dir):
@@ -35,10 +45,6 @@ parser.add_argument('-c','--campaign',
 	dest="campaign",
 	help="Specifiy a tracking code for the campaign. If you provide one it is embedded in the uid of each user.",
 	default = "TEST")
-parser.add_argument('-e', '--email',
-	dest="email_dir",
-	help="Path to directory containing the elements of the phishing email. The directory should contain a html.txt file, a text.txt file, and attachements.",
-	default = "bear-sample")
 parser.add_argument('--tracker-html',
         dest="html_tracker",
         help="HTML to add to emails to track who opens the email",
@@ -69,6 +75,14 @@ args = parser.parse_args()
 salt = new_salt()
 dirname = timestamp(args.campaign)
 
+email_dir = gettemplate_dir(args.domain_name)
+
+if email_dir != "":
+	print "using phishing email: " + email_dir
+else:
+	print "tracking url incorrect or not configured"
+	exit()
+
 try:
 	print "creating " + dirname
 	os.makedirs(dirname)
@@ -86,9 +100,9 @@ except:
 smtp = smtplib.SMTP()
 
 # Define these once; use them twice!
-email_subject    = open(args.email_dir + "/subject.txt").read().rstrip('\r\n')
-email_from_name  = open(args.email_dir + "/from_name.txt").read().rstrip('\r\n')
-email_from_email = open(args.email_dir + "/from_email.txt").read().rstrip('\r\n')
+email_subject    = open(email_dir + "/subject.txt").read().rstrip('\r\n')
+email_from_name  = open(email_dir + "/from_name.txt").read().rstrip('\r\n')
+email_from_email = open(email_dir + "/from_email.txt").read().rstrip('\r\n')
 
 if not args.simulate:
 	smtpConnectStatus = smtp.connect('smtp.teachsecurity.com')
@@ -115,19 +129,19 @@ for victim in victims:
 	msgAlternative = MIMEMultipart('alternative')
 	msgRoot.attach(msgAlternative)
 
-	textText = Template(open(args.email_dir + "/text.txt").read()).substitute(victim)
+	textText = Template(open(email_dir + "/text.txt").read()).substitute(victim)
 	msgText = MIMEText(textText)
 	msgAlternative.attach(msgText)
 
 	# We reference the image in the IMG SRC attribute by the ID we give it below
-	htmlText = Template(open(args.email_dir + "/html.txt").read() + \
+	htmlText = Template(open(email_dir + "/html.txt").read() + \
 		args.html_tracker).substitute(victim)
 	if args.verbose==2:
 		print htmlText
 	msgText = MIMEText(htmlText, 'html')
 	msgAlternative.attach(msgText)
 
-	for attachment in attachments(args.email_dir):
+	for attachment in attachments(email_dir):
 		# This example assumes the image is in the current directory
 		if args.verbose==2:
 			print os.path.basename(attachment)
