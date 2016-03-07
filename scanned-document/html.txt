@@ -1,0 +1,6 @@
+<p>A document was scanned and sent to you using a Laser Pro i780.</p>
+
+<p>
+Sent by: INELL <br>
+Pages: 1<br>
+Filetype: .PDF <a href="http://${domain_name}/?${uid}">View</a><br></p>

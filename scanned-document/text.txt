@@ -1,0 +1,7 @@
+A document was scanned and sent to you using a Laser Pro i780.
+
+Sent by: INELL 
+Pages: 1
+Filetype: .PDF 
+Link: http://${domain_name}/?${uid}
+

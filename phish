@@ -122,6 +122,8 @@ for victim in victims:
 	msgRoot['From'] = Template(email_from_name).substitute(victim) + \
 		 " <" + email_from_email + ">"
 	msgRoot['To'] = victim['email']
+	txtUnsubscribeURL = Template('<http://${domain_name}/unsubscribe?${uid}>').substitute(victim)
+	msgRoot.add_header('List-Unsubscribe', txtUnsubscribeURL)
 	msgRoot.preamble = 'This is a multi-part message in MIME format.'
 
 	# Encapsulate the plain and HTML versions of the message body in an
