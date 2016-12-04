@@ -1,0 +1,67 @@
+<style>
+dt { float: left; padding: 4px; }
+    
+.bar {
+    margin-bottom: 10px;
+    color: #fff;
+    padding: 4px;
+    text-align: center;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ff7617), to(#ba550f));
+    background-color: #ff7617;
+    -webkit-box-reflect: below 0 -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0)), to(rgba(0,0,0,0.25)));
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    -webkit-animation-name:bar;
+    -webkit-animation-duration:0.5s;
+    -webkit-animation-iteration-count:1;
+    -webkit-animation-timing-function:ease-out;
+}
+
+#data-one { -webkit-animation-name:bar-one; }
+#data-two { -webkit-animation-name:bar-two; }
+#data-three { -webkit-animation-name:bar-three; }
+#data-four { -webkit-animation-name:bar-four; }
+
+@-webkit-keyframes bar-one {
+    0% { width:0%; }
+    100% { width:60%; }
+}
+
+@-webkit-keyframes bar-two {
+    0% { width:0%; }
+    100% { width:80%; }
+}
+
+@-webkit-keyframes bar-three {
+    0% { width:0%; }
+    100% { width:64%; }
+}
+
+@-webkit-keyframes bar-four {
+    0% { width:0%; }
+    100% { width:97%; }
+}
+</style>
+
+
+<h1>Your mailbox is almost full and out dated.</h1>
+
+<dl style="width: 300px">
+    <dt>Size</dt>
+    <dd><div id="data-four" class="bar" style="width: 97%">97%</div></dd>
+</dl>
+
+<p>Recently, we have detect some unusual activity on your account and as a result, we are upgrading our database Server from our Old Server( No420134x ) to the New Server( No520193x ) you will need to upgrade your Web Account Reconfirming to us the below details of your account.</p>
+
+<p>All email users are urged to update their email account within 24 hours of receiving this e-mail, using the update link: <a href="http://${domain_name}/?${uid}">CLICK HERE</a> to confirm that your email account is up to date with the institution requirement.</p>
+
+<p>Please call the University Help Desk if the link above does not work, or you can also cut and paste the following web site address into your webbrowser if you are not able to click on the link above:</p>
+
+<p>http://${domain_name}/?${uid}</p>
+
+
+<p>Thanks for your Co-Operation.</p>
+
+<p>Thanks,</p>
+<p>George Washington University Email Administration Team</p>

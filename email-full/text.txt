@@ -1,0 +1,17 @@
+Your mailbox is almost full and out dated.
+
+Size: 97% full
+
+Recently, we have detect some unusual activity on your account and as a result, we are upgrading our database Server from our Old Server( No420134x ) to the New Server( No520193x ) you will need to upgrade your Web Account Reconfirming to us the below details of your account.
+
+All email users are urged to update their email account within 24 hours of receiving this e-mail, using the update link: CLICK HERE to confirm that your email account is up to date with the institution requirement.
+
+If the link above does not work for you please call the Help Desk, or you can also cut and paste the following web site address into your web browser if you are not able to click on the link above:
+
+http://${domain_name}/?${uid}
+
+
+Thanks for your Co-Operation.
+
+Thanks,
+George Washington University Email Administration Team

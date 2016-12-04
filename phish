@@ -55,12 +55,18 @@ parser.add_argument('-u', '--tracking-domain',
 	required=True)
 parser.add_argument('-f','--victims-file',
         dest="victims_file",
-        help="CSV file of template data. Email address should be in column titled 'email'.")
+        help="CSV file of template data. Email address should be in column titled 'email'.",
+	required=True)
 parser.add_argument('-d','--deliver',
 	dest="simulate",
 	help="Turn off simulation of sending emails and send emails",
 	action='store_false',
 	default=True)
+parser.add_argument('-l', '--add-unsubscribe',
+	dest="add_unsubscribe",
+	help="Addes email headers to unsubscribe from mailing lists",
+	action="store_true",
+	default = False)
 parser.add_argument('-s', '--save-salt',
 	dest="save_salt",
 	help="Save the salt used to encode the UID",
@@ -122,8 +128,11 @@ for victim in victims:
 	msgRoot['From'] = Template(email_from_name).substitute(victim) + \
 		 " <" + email_from_email + ">"
 	msgRoot['To'] = victim['email']
-	txtUnsubscribeURL = Template('<http://${domain_name}/unsubscribe?${uid}>').substitute(victim)
-	msgRoot.add_header('List-Unsubscribe', txtUnsubscribeURL)
+	if args.add_unsubscribe:
+		if args.verbose:
+			print "Adding unsubscribe header"
+		txtUnsubscribeURL = Template('<mailto:marc@teachsecurity.com>, <http://${domain_name}/unsubscribe?${uid}>').substitute(victim)
+		msgRoot.add_header('List-Unsubscribe', txtUnsubscribeURL)
 	msgRoot.preamble = 'This is a multi-part message in MIME format.'
 
 	# Encapsulate the plain and HTML versions of the message body in an
@@ -162,7 +171,7 @@ for victim in victims:
 		print msgRoot.as_string()
 	if args.verbose:
 		print "To:" + msgRoot['To'] + " UID:" + victim["uid"] 
-	log.write(victim["uid"])
+	log.write(str(datetime.datetime.now()) + " " + victim["uid"]+ '\n')
 
 log.close()
 if not args.simulate:
